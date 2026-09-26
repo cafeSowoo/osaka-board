@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#E5171F">
+<meta property="og:title" content="오사카 작전회의">
+<meta property="og:description" content="가고 싶은 곳 올리고, 좋아요 누르고, 같이 일정 짜기">
+<title>오사카 작전회의</title>
+<style>
+html{color-scheme:light}
+body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#F3F4F7; --surface:#FFFFFF; --sunk:#E9EBF0; --ink:#16171B; --muted:#5B606D; --faint:#8A8F9C; --line:#DEE1E7;
+  --accent:#E5171F; --accent-ink:#FFFFFF; --accent-soft:#FDE8E9;
+  --k-sight:#019A66; --k-food:#E0700F; --k-shop:#D63B84; --k-move:#0078BA; --k-talk:#6B3FA0;
+  --shadow:0 1px 2px rgba(22,23,27,.06),0 4px 14px rgba(22,23,27,.05);
+  --display:"Do Hyeon","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#111216; --surface:#1A1C21; --sunk:#23262D; --ink:#ECEDF0; --muted:#A2A6B2; --faint:#767B88; --line:#2D3038;
+    --accent:#FF4B51; --accent-ink:#1A0406; --accent-soft:#3A1518;
+    --k-sight:#2FC48C; --k-food:#FF9A3D; --k-shop:#FF6FAE; --k-move:#48A8EE; --k-talk:#A98BE0;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#111216; --surface:#1A1C21; --sunk:#23262D; --ink:#ECEDF0; --muted:#A2A6B2; --faint:#767B88; --line:#2D3038;
+  --accent:#FF4B51; --accent-ink:#1A0406; --accent-soft:#3A1518;
+  --k-sight:#2FC48C; --k-food:#FF9A3D; --k-shop:#FF6FAE; --k-move:#48A8EE; --k-talk:#A98BE0;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:inherit}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:20px 120px}
+
+/* header */
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--muted);display:flex;align-items:center;gap:8px}
+.eyebrow .bar{width:22px;height:4px;border-radius:2px;background:var(--accent)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,8vw,48px);line-height:1.05;margin:10px 0 6px;text-wrap:balance;letter-spacing:-.01em}
+.trip-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;color:var(--muted);font-size:14px}
+.dday{font-family:var(--mono);font-weight:600;background:var(--accent);color:var(--accent-ink);padding:1px 8px;border-radius:4px;font-size:13px}
+.linkbtn{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:13px}
+.linkbtn:hover{color:var(--ink)}
+
+.crew{margin-top:16px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px 3px 4px;background:var(--surface);border:1px solid var(--line);font-size:13px;font-weight:500}
+.dot{width:18px;height:18px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-size:11px;font-weight:700;flex:none}
+.chip.me{border-color:var(--ink)}
+.whoami{margin-left:auto;font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center}
+
+.banner{margin-top:14px;padding:10px 12px;border-radius:8px;background:var(--accent-soft);color:var(--ink);font-size:13.5px}
+
+/* tabs */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);margin-top:18px;display:flex;gap:4px;border-bottom:1px solid var(--line);padding-top:6px}
+.tab{background:none;border:0;padding:10px 12px 11px;font-family:var(--display);font-size:18px;color:var(--faint);border-bottom:3px solid transparent;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab .n{font-family:var(--mono);font-size:11px;vertical-align:2px;margin-left:3px;color:var(--faint)}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:16px 0 12px}
+.fchip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.fchip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.toolbar .sp{flex:1}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:4px 10px;font-size:12.5px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--sunk);color:var(--ink);font-weight:600}
+
+/* metro badge */
+.lb{--c:var(--k-sight);width:22px;height:22px;border-radius:50%;border:3px solid var(--c);color:var(--c);display:inline-grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:11px;line-height:1;flex:none;background:var(--surface)}
+
+/* cards */
+.list{display:grid;gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px 12px;box-shadow:var(--shadow);scroll-margin-top:70px;transition:box-shadow .3s}
+.card.flash{box-shadow:0 0 0 3px var(--accent)}
+.card-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.card-top .kind{font-weight:600}
+.pill{font-family:var(--mono);font-size:11.5px;padding:1px 7px;border-radius:4px;background:var(--sunk);color:var(--ink);font-weight:600}
+.pill.day{background:var(--accent-soft);color:var(--accent)}
+.pill.ex{background:transparent;border:1px dashed var(--faint);color:var(--muted);font-family:var(--body);font-weight:500}
+.card-top .edit{margin-left:auto}
+.card h3{margin:8px 0 2px;font-size:17px;font-weight:700;line-height:1.35;text-wrap:balance}
+.card .body{margin:6px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink)}
+.card .body a{color:var(--k-move)}
+.place{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:13.5px;color:var(--k-move);text-decoration:none;font-weight:500;overflow-wrap:anywhere}
+.place:hover{text-decoration:underline}
+.place svg{flex:none}
+.byline{margin-top:10px;font-size:12.5px;color:var(--faint);display:flex;align-items:center;gap:6px}
+.byline .dot{width:16px;height:16px;font-size:10px}
+
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.vote{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 11px;font-size:13px;display:inline-flex;gap:6px;align-items:center}
+.vote.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:600}
+.vote .c{font-family:var(--mono)}
+.voters{font-size:12.5px;color:var(--muted)}
+.assign{margin-left:auto;display:flex;gap:6px;align-items:center}
+.assign select,.assign input{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:3px 6px;font-size:13px}
+.assign input{font-family:var(--mono);width:92px}
+
+.comments{margin-top:10px;display:grid;gap:6px}
+.cm{display:flex;gap:8px;align-items:flex-start;font-size:14px}
+.cm .dot{margin-top:2px}
+.cm .who{font-weight:600;margin-right:6px}
+.cm .when{font-size:11.5px;color:var(--faint);margin-left:6px}
+.cm .txt{overflow-wrap:anywhere;white-space:pre-wrap}
+.cm .x{background:none;border:0;color:var(--faint);font-size:12px;padding:0 4px;margin-left:auto}
+.cform{display:flex;gap:6px;margin-top:4px}
+.cform input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 10px;font-size:14px}
+.cform button{border:0;background:var(--ink);color:var(--bg);border-radius:8px;padding:0 12px;font-size:13px;font-weight:600}
+
+/* plan / metro line */
+.line{position:relative;margin-top:18px;padding-left:28px}
+.line::before{content:"";position:absolute;left:9px;top:10px;bottom:10px;width:5px;border-radius:3px;background:var(--accent)}
+.day{position:relative;padding-bottom:22px}
+.day:last-child{padding-bottom:0}
+.stn{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.stn::before{content:"";position:absolute;left:-28px;top:2px;width:23px;height:23px;border-radius:50%;background:var(--surface);border:5px solid var(--accent);box-sizing:border-box}
+.stn .code{font-family:var(--mono);font-weight:600;font-size:13px;color:var(--accent);letter-spacing:.04em}
+.stn .dname{font-family:var(--display);font-size:22px;line-height:1}
+.stn .date{color:var(--muted);font-size:13.5px}
+.route{margin-left:auto;font-size:12.5px;display:inline-flex;align-items:center;gap:5px;color:var(--k-move);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.route:hover{border-color:var(--k-move)}
+.stops{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.stop{display:grid;grid-template-columns:52px 22px 1fr auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;text-align:left;width:100%}
+.stop:hover{border-color:var(--faint)}
+.stop time{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.stop .t{font-weight:600;overflow-wrap:anywhere}
+.stop .s{display:block;font-size:12.5px;color:var(--muted);font-weight:400}
+.stop .st{font-family:var(--mono);font-size:12px;color:var(--faint);white-space:nowrap}
+.emptyday{margin-top:8px;font-size:13.5px;color:var(--faint)}
+.empty{padding:28px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px;font-size:14px}
+
+.fab{position:fixed;right:max(16px,calc(50% - 364px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:6;border:0;background:var(--accent);color:var(--accent-ink);font-weight:700;border-radius:999px;padding:13px 20px;font-size:15px;box-shadow:0 6px 20px rgba(229,23,31,.35);display:flex;gap:6px;align-items:center}
+.legend{margin-top:28px;font-size:12px;color:var(--faint);display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.legend span{display:inline-flex;gap:5px;align-items:center}
+.legend .lb{width:18px;height:18px;border-width:2.5px;font-size:9.5px}
+
+/* modals */
+.ov{position:fixed;inset:0;z-index:20;background:rgba(10,11,14,.45);display:flex;align-items:flex-end;justify-content:center;padding:0}
+@media (min-width:640px){.ov{align-items:center;padding:24px}}
+.sheet{background:var(--surface);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+@media (min-width:640px){.sheet{border-radius:14px;padding:22px 22px}}
+.sheet h2{font-family:var(--display);font-weight:400;font-size:26px;margin:0 0 4px}
+.sheet .sub{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+.field{display:grid;gap:5px;margin-bottom:12px}
+.field label,.flabel{font-size:12.5px;font-weight:600;color:var(--muted)}
+.field input,.field textarea,.field select{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 11px;font-size:15px;width:100%}
+.field textarea{min-height:88px;resize:vertical}
+.field .hint{font-size:12px;color:var(--faint)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kinds{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.kinds button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px 5px 5px;display:inline-flex;align-items:center;gap:7px;font-size:14px}
+.kinds button[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);font-weight:600}
+.btns{display:flex;gap:8px;margin-top:6px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 16px;font-weight:600;font-size:14.5px}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.dng{color:var(--accent);border-color:transparent;background:none;padding-inline:4px}
+.btn.dng.sure{background:var(--accent);color:var(--accent-ink);padding-inline:12px}
+.btns .sp{flex:1}
+.names{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.names button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px 6px 6px;display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
+.names button .dot{width:24px;height:24px;font-size:12px}
+.addname{display:flex;gap:8px}
+.addname input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 11px;font-size:15px}
+
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:13.5px;z-index:30;max-width:calc(100% - 32px)}
+@media (max-width:520px){
+  .assign{margin-left:0;width:100%}
+  .stop{grid-template-columns:44px 22px 1fr;padding:9px 10px}
+  .stop .st{display:none}
+  .whoami{margin-left:0;width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow"><span class="bar"></span>OSAKA · 大阪</div>
+    <h1 id="tripTitle">오사카 작전회의</h1>
+    <div class="trip-meta" id="tripMeta"></div>
+    <div class="crew" id="crew"></div>
+    <div id="banner"></div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="plan" id="tab-plan">일정표<span class="n" id="n-plan"></span></button>
+    <button class="tab" role="tab" data-tab="ideas" id="tab-ideas">가고 싶은 곳<span class="n" id="n-ideas"></span></button>
+    <button class="tab" role="tab" data-tab="talk" id="tab-talk">수다방<span class="n" id="n-talk"></span></button>
+  </nav>
+
+  <main id="main"></main>
+
+  <div class="legend" id="legend"></div>
+</div>
+
+<button class="fab" id="fab" type="button"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>올리기</button>
+
+<!-- who am I -->
+<div class="ov" id="whoOv" hidden>
+  <div class="sheet" role="dialog" aria-labelledby="whoH">
+    <h2 id="whoH">누구세요?</h2>
+    <p class="sub">이름을 고르면 이 폰에서는 계속 그 이름으로 글이 올라가요.</p>
+    <div class="names" id="whoNames"></div>
+    <div class="flabel" style="margin-bottom:6px">목록에 없으면 추가</div>
+    <form class="addname" id="whoForm">
+      <input id="whoInput" maxlength="12" placeholder="내 이름 (예: 민지)" autocomplete="off">
+      <button class="btn pri" type="submit">추가하고 시작</button>
+    </form>
+    <div class="btns" style="margin-top:14px"><span class="sp"></span><button class="btn" type="button" id="whoClose">그냥 구경만 할게요</button></div>
+  </div>
+</div>
+
+<!-- composer -->
+<div class="ov" id="postOv" hidden>
+  <form class="sheet" id="postForm" role="dialog" aria-labelledby="postH">
+    <h2 id="postH">올리기</h2>
+    <p class="sub" id="postSub">가고 싶은 곳, 맛집, 교통 정보, 의견 뭐든지.</p>
+    <div class="kinds" id="kindPick"></div>
+    <div class="field">
+      <label for="pTitle">제목</label>
+      <input id="pTitle" maxlength="80" required placeholder="예: 도톤보리 글리코 간판 앞에서 사진">
+    </div>
+    <div class="field" data-notalk>
+      <label for="pPlace">장소 이름 (구글지도 검색용)</label>
+      <input id="pPlace" maxlength="120" placeholder="예: 구로몬 시장 오사카">
+      <span class="hint">적어두면 구글지도 링크와 하루 동선 지도가 자동으로 만들어져요.</span>
+    </div>
+    <div class="field" data-notalk>
+      <label for="pUrl">구글지도 링크 (있으면)</label>
+      <input id="pUrl" inputmode="url" maxlength="500" placeholder="구글지도 앱에서 공유 → 링크 복사 → 붙여넣기">
+    </div>
+    <div class="field">
+      <label for="pBody">내용</label>
+      <textarea id="pBody" maxlength="3000" placeholder="왜 가고 싶은지, 가격, 영업시간, 예약 필요 여부, 인스타 링크 등"></textarea>
+    </div>
+    <div class="row2" data-notalk>
+      <div class="field"><label for="pDay">날짜</label><select id="pDay"></select></div>
+      <div class="field"><label for="pTime">시간</label><input id="pTime" type="time"></div>
+    </div>
+    <div class="btns">
+      <button class="btn dng" type="button" id="pDel" hidden>삭제</button>
+      <span class="sp"></span>
+      <button class="btn" type="button" id="pCancel">취소</button>
+      <button class="btn pri" type="submit" id="pSave">올리기</button>
+    </div>
+  </form>
+</div>
+
+<!-- trip settings -->
+<div class="ov" id="tripOv" hidden>
+  <form class="sheet" id="tripForm" role="dialog" aria-labelledby="tripH">
+    <h2 id="tripH">여행 정보</h2>
+    <p class="sub">여기서 바꾸면 모두에게 똑같이 바뀌어요.</p>
+    <div class="field"><label for="tTitle">여행 이름</label><input id="tTitle" maxlength="40"></div>
+    <div class="row2">
+      <div class="field"><label for="tStart">출발일</label><input id="tStart" type="date"></div>
+      <div class="field"><label for="tDays">며칠?</label><select id="tDays"></select></div>
+    </div>
+    <div class="field"><label for="tNote">메모 (숙소, 항공편 등)</label><textarea id="tNote" maxlength="600" placeholder="예: 숙소 난바역 도보 5분 / 인천 09:10 → 간사이 10:55"></textarea></div>
+    <div class="btns"><span class="sp"></span><button class="btn" type="button" id="tCancel">취소</button><button class="btn pri" type="submit">저장</button></div>
+  </form>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+const SB_URL = 'https://myincubzgvhyreyqbban.supabase.co';
+const SB_KEY = 'sb_publishable_6NmnzRERi_Azsyh44zbZnw_HjqHh7hd';
+const TRIP = 'osaka-2611';
+const POLL_MS = 8000;
+
+const KINDS = {
+  sight:{label:'관광', letter:'C', v:'--k-sight'},
+  food: {label:'맛집', letter:'I', v:'--k-food'},
+  shop: {label:'쇼핑', letter:'S', v:'--k-shop'},
+  move: {label:'교통·숙소', letter:'Y', v:'--k-move'},
+  talk: {label:'의견', letter:'T', v:'--k-talk'},
+};
+const PLACE_KINDS = ['sight','food','shop','move'];
+const MEMBER_COLORS = ['#E5171F','#019A66','#0078BA','#D9650C','#C9337A','#6B3FA0','#814721','#00868A'];
+const WD = ['일','월','화','수','목','금','토'];
+const PIN = '<svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5a4.8 4.8 0 0 0-4.8 4.8c0 3.6 4.8 8.2 4.8 8.2s4.8-4.6 4.8-8.2A4.8 4.8 0 0 0 8 1.5Z" fill="currentColor"/><circle cx="8" cy="6.3" r="1.8" fill="var(--surface)"/></svg>';
+
+const ls = {
+  get(k, d){ try{ const v = localStorage.getItem('osaka.' + TRIP + '.' + k); return v == null ? d : JSON.parse(v); }catch{ return d; } },
+  set(k, v){ try{ localStorage.setItem('osaka.' + TRIP + '.' + k, JSON.stringify(v)); }catch{} },
+};
+function readKey(){
+  const m = location.hash.match(/k=([A-Za-z0-9]{8,64})/);
+  if(m){ ls.set('key', m[1]); return m[1]; }
+  const saved = ls.get('key', null);
+  if(saved){ try{ history.replaceState(null, '', '#k=' + saved); }catch{} }
+  return saved;
+}
+
+const S = {
+  key: readKey(), badKey:false, offline:false, loaded:false, lastJson:'',
+  trip:{title:'오사카 작전회의', start:'', days:3, note:''},
+  members:[], posts:[], comments:[], votes:[],
+  me: ls.get('me', null),
+  tab: ls.get('tab', 'plan'), filter: ls.get('filter','all'), sort: ls.get('sort','hot'),
+  drafts:{}, editing:null, kind:'sight', whoAsked:false, busy:false,
+};
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeUrl = u => { try{ const x = new URL(String(u).trim()); return /^https?:$/.test(x.protocol) ? x.href : ''; }catch{ return ''; } };
+const linkify = t => esc(t).replace(/https?:\/\/[^\s<]+/g, m => { const u = safeUrl(m.replace(/&amp;/g,'&')); return u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${m}</a>` : m; });
+const mapHref = p => safeUrl(p.mapUrl) || (p.place ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(p.place) : '');
+
+function memberById(id){ return S.members.find(m => m.id === id); }
+function nameOf(id){ return id ? (memberById(id)?.name || '나간 사람') : '예시'; }
+function colorOf(id){ const m = memberById(id); return m ? MEMBER_COLORS[(m.color ?? 0) % MEMBER_COLORS.length] : '#8A8F9C'; }
+function dotHtml(id){ const n = nameOf(id); return `<span class="dot" style="background:${colorOf(id)}">${esc(n.slice(0,1))}</span>`; }
+function lb(kind){ const k = KINDS[kind] || KINDS.sight; return `<span class="lb" style="--c:var(${k.v})" aria-hidden="true">${k.letter}</span>`; }
+
+function dayDate(n){
+  if(!S.trip.start) return null;
+  const d = new Date(S.trip.start + 'T00:00:00'); if(isNaN(d)) return null;
+  d.setDate(d.getDate() + n - 1); return d;
+}
+const fmtMD = d => `${d.getMonth()+1}/${d.getDate()} (${WD[d.getDay()]})`;
+function ago(ts){
+  const s = (Date.now() - ts) / 1000;
+  if(s < 60) return '방금'; if(s < 3600) return Math.floor(s/60) + '분 전';
+  if(s < 86400) return Math.floor(s/3600) + '시간 전';
+  const d = new Date(ts); return `${d.getMonth()+1}/${d.getDate()}`;
+}
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
+
+/* ---------- server ---------- */
+async function rpc(fn, args = {}){
+  const r = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, {
+    method:'POST',
+    headers:{apikey:SB_KEY, 'Content-Type':'application/json'},
+    body: JSON.stringify({p_trip:TRIP, p_key:S.key, ...args}),
+  });
+  const txt = await r.text();
+  let data = null; try{ data = txt ? JSON.parse(txt) : null; }catch{}
+  if(!r.ok) throw {status:r.status, code:data?.code, message:data?.message};
+  return data;
+}
+async function refresh(){
+  if(!S.key || S.badKey) return;
+  try{
+    const d = await rpc('osaka_board_get');
+    S.offline = false;
+    const json = JSON.stringify(d);
+    const first = !S.loaded;
+    S.loaded = true;
+    if(json !== S.lastJson){
+      S.lastJson = json;
+      S.trip = {...S.trip, ...d.trip};
+      S.members = d.members; S.posts = d.posts; S.comments = d.comments; S.votes = d.votes;
+      render();
+    } else if(first) render();
+    if(first && (!S.me || !memberById(S.me)) && !S.whoAsked) openWho();
+  }catch(e){
+    if(e?.code === '28000'){ S.badKey = true; render(); }
+    else if(!S.offline){ S.offline = true; render(); }
+  }
+}
+async function write(fn, okMsg){
+  if(S.busy) return false;
+  S.busy = true;
+  try{ const r = await fn(); if(okMsg) toast(okMsg); await refresh(); return r ?? true; }
+  catch(e){
+    if(e?.code === '28000'){
+      if(/member/.test(e.message || '')){ S.me = null; ls.set('me', null); openWho(); toast('이름을 다시 골라주세요'); }
+      else { S.badKey = true; render(); }
+    }
+    else if(e?.code === '54000') toast('보드가 꽉 찼어요. 안 쓰는 글을 지워주세요.');
+    else if(e?.code === '23514' || e?.code === '22P02' || e?.code === '22007') toast('입력한 값을 확인해주세요 (글자 수, 시간 형식 등).');
+    else toast('저장이 안 됐어요. 인터넷 연결을 확인하고 다시 해주세요.');
+    return false;
+  }
+  finally{ S.busy = false; }
+}
+function needMe(){ if(!S.me || !memberById(S.me)){ openWho(); return false; } return true; }
+
+/* ---------- render ---------- */
+let rq = 0;
+function render(){ cancelAnimationFrame(rq); rq = requestAnimationFrame(doRender); }
+function doRender(){
+  const ae = document.activeElement, aid = ae?.id, sel = ae && 'selectionStart' in ae ? [ae.selectionStart, ae.selectionEnd] : null;
+  renderHeader(); renderTabs(); renderMain();
+  if(aid){ const el = document.getElementById(aid); if(el && el !== ae){ el.focus(); if(sel) try{ el.setSelectionRange(sel[0], sel[1]); }catch{} } }
+}
+
+function renderHeader(){
+  const t = S.trip;
+  $('#tripTitle').textContent = t.title || '오사카 작전회의';
+  document.title = t.title || '오사카 작전회의';
+  const parts = [];
+  const d1 = dayDate(1);
+  if(d1){
+    const dn = dayDate(t.days);
+    const diff = Math.round((d1 - new Date(new Date().toDateString())) / 86400000);
+    const dd = diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY' : (diff > -t.days ? '여행 중' : '다녀옴');
+    parts.push(`<span class="dday">${dd}</span>`);
+    parts.push(`<span>${fmtMD(d1)} – ${fmtMD(dn)} · ${t.days > 1 ? (t.days-1) + '박 ' : ''}${t.days}일</span>`);
+  } else parts.push(`<span>${t.days > 1 ? (t.days-1) + '박 ' : ''}${t.days}일 · 날짜 미정</span>`);
+  if(t.note) parts.push(`<span style="flex-basis:100%;white-space:pre-wrap">${esc(t.note)}</span>`);
+  if(S.loaded){
+    parts.push(`<button class="linkbtn" type="button" id="editTrip">여행 정보 수정</button>`);
+    parts.push(`<button class="linkbtn" type="button" id="copyLink">초대 링크 복사</button>`);
+  }
+  $('#tripMeta').innerHTML = parts.join('');
+
+  const crew = S.members.map(m => `<span class="chip${m.id === S.me ? ' me' : ''}">${dotHtml(m.id)}${esc(m.name)}</span>`).join('');
+  const me = memberById(S.me);
+  $('#crew').innerHTML = S.loaded ? (crew || '<span style="color:var(--faint);font-size:13px">아직 들어온 사람이 없어요.</span>') +
+    `<span class="whoami">${me ? `나: <b style="color:var(--ink)">${esc(me.name)}</b>` : '이름 안 고름'} <button class="linkbtn" type="button" id="pickMe">${me ? '바꾸기' : '이름 고르기'}</button></span>` : '';
+
+  let b = '';
+  if(!S.key || S.badKey) b = '입장 링크가 없거나 틀렸어요. 카톡방에 올라온 링크를 눌러서 다시 들어와 주세요.';
+  else if(S.offline) b = '서버에 연결이 안 돼요. 인터넷이 연결되면 자동으로 다시 불러와요.';
+  $('#banner').innerHTML = b ? `<div class="banner">${esc(b)}</div>` : '';
+  $('#fab').hidden = !S.loaded || S.badKey;
+}
+
+function renderTabs(){
+  document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === S.tab));
+  const placed = S.posts.filter(p => p.kind !== 'talk');
+  $('#n-plan').textContent = placed.filter(p => p.day > 0 && p.day <= S.trip.days).length || '';
+  $('#n-ideas').textContent = placed.length || '';
+  $('#n-talk').textContent = S.posts.filter(p => p.kind === 'talk').length || '';
+  $('#legend').innerHTML = '<span>표시 색은 오사카 메트로 노선색:</span>' + Object.values(KINDS).map(k => `<span><span class="lb" style="--c:var(${k.v})">${k.letter}</span>${k.label}</span>`).join('');
+}
+
+function votesFor(pid){ return S.votes.filter(v => v.postId === pid); }
+function commentsFor(pid){ return S.comments.filter(c => c.postId === pid); }
+
+function renderMain(){
+  const m = $('#main');
+  if(!S.key || S.badKey){ m.innerHTML = '<div class="empty" style="margin-top:18px">친구가 보내준 초대 링크로 들어오면 여기에 일정이 보여요.</div>'; return; }
+  if(!S.loaded){ m.innerHTML = '<div class="empty" style="margin-top:18px">불러오는 중…</div>'; return; }
+  if(S.tab === 'plan') m.innerHTML = planHtml();
+  else if(S.tab === 'ideas') m.innerHTML = ideasHtml();
+  else m.innerHTML = talkHtml();
+}
+
+function planHtml(){
+  const days = [];
+  for(let d = 1; d <= S.trip.days; d++){
+    const items = S.posts.filter(p => p.kind !== 'talk' && p.day === d)
+      .sort((a,b) => (a.time || '99') < (b.time || '99') ? -1 : (a.time || '99') > (b.time || '99') ? 1 : a.ts - b.ts);
+    const dt = dayDate(d);
+    const stops = items.filter(p => p.place || safeUrl(p.mapUrl)).map(p => p.place || p.title);
+    const route = stops.length >= 2 ? 'https://www.google.com/maps/dir/' + stops.map(encodeURIComponent).join('/') : '';
+    days.push(`<section class="day">
+      <div class="stn"><span class="code">D${String(d).padStart(2,'0')}</span><span class="dname">${d}일차</span>${dt ? `<span class="date">${fmtMD(dt)}</span>` : ''}
+        ${route ? `<a class="route" href="${esc(route)}" target="_blank" rel="noopener">${PIN}이 날 동선 지도</a>` : ''}</div>
+      ${items.length ? `<ol class="stops">${items.map(p => {
+        const v = votesFor(p.id).length, c = commentsFor(p.id).length;
+        return `<li><button class="stop" type="button" data-jump="${esc(p.id)}"><time>${esc(p.time || '--:--')}</time>${lb(p.kind)}
+          <span class="t">${esc(p.title)}${p.place ? `<span class="s">${esc(p.place)}</span>` : ''}</span>
+          <span class="st">♥${v} · 댓글 ${c}</span></button></li>`;}).join('')}</ol>`
+        : `<div class="emptyday">아직 비어 있어요. '가고 싶은 곳'에서 ${d}일차로 넣어주세요.</div>`}
+    </section>`);
+  }
+  const unassigned = S.posts.filter(p => p.kind !== 'talk' && !(p.day > 0 && p.day <= S.trip.days)).length;
+  return `<div class="line">${days.join('')}</div>
+    ${unassigned ? `<p style="margin-top:20px;font-size:13.5px;color:var(--muted)">날짜 안 정해진 후보 ${unassigned}곳 → <button class="linkbtn" type="button" data-tabgo="ideas">가고 싶은 곳 보기</button></p>` : ''}`;
+}
+
+function ideasHtml(){
+  let list = S.posts.filter(p => p.kind !== 'talk');
+  const counts = {all:list.length}; PLACE_KINDS.forEach(k => counts[k] = list.filter(p => p.kind === k).length);
+  if(S.filter !== 'all') list = list.filter(p => p.kind === S.filter);
+  list = [...list].sort(S.sort === 'hot' ? (a,b) => votesFor(b.id).length - votesFor(a.id).length || b.ts - a.ts : (a,b) => b.ts - a.ts);
+  const chips = ['all', ...PLACE_KINDS].map(k => `<button class="fchip" type="button" data-filter="${k}" aria-pressed="${S.filter === k}">${k === 'all' ? '전체' : lb(k) + KINDS[k].label} <span style="font-family:var(--mono);font-size:11px;opacity:.7">${counts[k]}</span></button>`).join('');
+  return `<div class="toolbar">${chips}<span class="sp"></span>
+    <div class="seg"><button type="button" data-sort="hot" aria-pressed="${S.sort === 'hot'}">좋아요순</button><button type="button" data-sort="new" aria-pressed="${S.sort === 'new'}">최신순</button></div></div>
+    ${list.length ? `<div class="list">${list.map(cardHtml).join('')}</div>` : `<div class="empty">아직 올라온 곳이 없어요. 오른쪽 아래 <b>올리기</b>로 첫 후보를 올려보세요.</div>`}`;
+}
+
+function talkHtml(){
+  const list = S.posts.filter(p => p.kind === 'talk').sort((a,b) => b.ts - a.ts);
+  return `<div style="height:16px"></div>` + (list.length ? `<div class="list">${list.map(cardHtml).join('')}</div>`
+    : `<div class="empty">예산, 숙소, USJ 갈지 말지… 정할 게 있으면 <b>의견</b>으로 올려서 좋아요로 투표해요.</div>`);
+}
+
+function cardHtml(p){
+  const k = KINDS[p.kind] || KINDS.sight;
+  const vs = votesFor(p.id), mine = vs.some(v => v.member === S.me), cs = commentsFor(p.id);
+  const href = mapHref(p);
+  const dayOpts = ['<option value="0">날짜 미정</option>'].concat(Array.from({length:S.trip.days}, (_, i) => {
+    const dt = dayDate(i+1); return `<option value="${i+1}"${p.day === i+1 ? ' selected' : ''}>${i+1}일차${dt ? ' ' + fmtMD(dt) : ''}</option>`; })).join('');
+  return `<article class="card" id="card-${esc(p.id)}">
+    <div class="card-top">${lb(p.kind)}<span class="kind" style="color:var(${k.v})">${k.label}</span>
+      ${p.kind !== 'talk' && p.day > 0 ? `<span class="pill day">${p.day}일차${p.time ? ' ' + esc(p.time) : ''}</span>` : ''}
+      ${p.example ? '<span class="pill ex">예시 · 지워도 돼요</span>' : ''}
+      <button class="linkbtn edit" type="button" data-edit="${esc(p.id)}">수정</button></div>
+    <h3>${esc(p.title)}</h3>
+    ${p.body ? `<p class="body">${linkify(p.body)}</p>` : ''}
+    ${href ? `<a class="place" href="${esc(href)}" target="_blank" rel="noopener">${PIN}${esc(p.place || '구글지도에서 보기')}</a>` : ''}
+    <div class="byline">${dotHtml(p.author)}${esc(nameOf(p.author))} · ${ago(p.ts)}</div>
+    <div class="actions">
+      <button class="vote${mine ? ' on' : ''}" type="button" data-vote="${esc(p.id)}" aria-pressed="${mine}">${mine ? '♥' : '♡'} 좋아요 <span class="c">${vs.length}</span></button>
+      ${vs.length ? `<span class="voters">${vs.map(v => esc(nameOf(v.member))).join(', ')}</span>` : ''}
+      ${p.kind !== 'talk' ? `<span class="assign"><select id="day-${esc(p.id)}" data-day="${esc(p.id)}" aria-label="날짜 배정">${dayOpts}</select>
+        <input type="time" id="time-${esc(p.id)}" data-time="${esc(p.id)}" value="${esc(p.time || '')}" aria-label="시간"></span>` : ''}
+    </div>
+    <div class="comments">
+      ${cs.map(c => `<div class="cm">${dotHtml(c.author)}<div class="txt"><span class="who">${esc(nameOf(c.author))}</span>${linkify(c.text)}<span class="when">${ago(c.ts)}</span></div>
+        ${c.author && c.author === S.me ? `<button class="x" type="button" data-delc="${esc(c.id)}" aria-label="댓글 삭제">삭제</button>` : ''}</div>`).join('')}
+      <form class="cform" data-cform="${esc(p.id)}"><input id="ci-${esc(p.id)}" data-draft="${esc(p.id)}" maxlength="500" placeholder="댓글 달기" autocomplete="off" value="${esc(S.drafts[p.id] || '')}"><button type="submit">등록</button></form>
+    </div>
+  </article>`;
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', async e => {
+  const t = e.target.closest('button, a'); if(!t) return;
+  if(t.matches('.tab')){ S.tab = t.dataset.tab; ls.set('tab', S.tab); render(); return; }
+  if(t.dataset.tabgo){ S.tab = t.dataset.tabgo; ls.set('tab', S.tab); render(); window.scrollTo({top:0}); return; }
+  if(t.dataset.filter){ S.filter = t.dataset.filter; ls.set('filter', S.filter); render(); return; }
+  if(t.dataset.sort){ S.sort = t.dataset.sort; ls.set('sort', S.sort); render(); return; }
+  if(t.id === 'pickMe'){ openWho(); return; }
+  if(t.id === 'editTrip'){ openTrip(); return; }
+  if(t.id === 'copyLink'){
+    const link = location.origin + location.pathname + '#k=' + S.key;
+    try{ await navigator.clipboard.writeText(link); toast('초대 링크를 복사했어요. 카톡방에 붙여넣기 하세요.'); }
+    catch{ window.prompt('이 링크를 복사해서 카톡방에 올려주세요', link); }
+    return;
+  }
+  if(t.id === 'fab'){ if(needMe()) openPost(null); return; }
+  if(t.dataset.jump){
+    const p = S.posts.find(x => x.id === t.dataset.jump); if(!p) return;
+    S.tab = p.kind === 'talk' ? 'talk' : 'ideas'; S.filter = 'all'; ls.set('tab', S.tab); ls.set('filter', 'all'); doRender();
+    const c = document.getElementById('card-' + p.id);
+    if(c){ c.scrollIntoView({behavior:'smooth', block:'start'}); c.classList.add('flash'); setTimeout(() => c.classList.remove('flash'), 1600); }
+    return;
+  }
+  if(t.dataset.edit){ if(needMe()) openPost(S.posts.find(x => x.id === t.dataset.edit)); return; }
+  if(t.dataset.vote){
+    if(!needMe()) return;
+    await write(() => rpc('osaka_board_toggle_vote', {p_member:S.me, p_post:t.dataset.vote}));
+    return;
+  }
+  if(t.dataset.delc){ await write(() => rpc('osaka_board_delete_comment', {p_member:S.me, p_comment:t.dataset.delc}), '댓글을 지웠어요'); return; }
+});
+
+document.addEventListener('change', async e => {
+  const t = e.target;
+  if(t.dataset.day){
+    const p = S.posts.find(x => x.id === t.dataset.day); if(!p) return;
+    const day = +t.value;
+    await write(() => rpc('osaka_board_schedule', {p_post:p.id, p_day:day, p_time:p.time || ''}), day ? `${day}일차에 넣었어요` : '날짜 미정으로 뺐어요');
+  } else if(t.dataset.time){
+    const p = S.posts.find(x => x.id === t.dataset.time); if(!p) return;
+    await write(() => rpc('osaka_board_schedule', {p_post:p.id, p_day:p.day || 0, p_time:t.value || ''}));
+  }
+});
+document.addEventListener('input', e => { if(e.target.dataset.draft) S.drafts[e.target.dataset.draft] = e.target.value; });
+document.addEventListener('submit', async e => {
+  const f = e.target; if(!f.dataset.cform) return;
+  e.preventDefault(); if(!needMe()) return;
+  const pid = f.dataset.cform, text = (S.drafts[pid] || '').trim(); if(!text) return;
+  S.drafts[pid] = '';
+  const ok = await write(() => rpc('osaka_board_add_comment', {p_member:S.me, p_post:pid, p_body:text}));
+  if(!ok){ S.drafts[pid] = text; render(); }
+});
+
+/* ---------- who am I ---------- */
+function openWho(){
+  S.whoAsked = true;
+  $('#whoNames').innerHTML = S.members.length ? S.members.map(m => `<button type="button" data-pick="${esc(m.id)}">${dotHtml(m.id)}${esc(m.name)}</button>`).join('') : '<span style="color:var(--faint);font-size:14px">아직 아무도 없어요. 첫 번째로 이름을 추가해주세요.</span>';
+  $('#whoOv').hidden = false;
+}
+$('#whoNames').addEventListener('click', e => { const b = e.target.closest('[data-pick]'); if(!b) return; S.me = b.dataset.pick; ls.set('me', S.me); $('#whoOv').hidden = true; render(); toast(`${nameOf(S.me)}(으)로 들어왔어요`); });
+$('#whoClose').onclick = () => $('#whoOv').hidden = true;
+$('#whoForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = $('#whoInput').value.trim(); if(!name) return;
+  const id = await write(() => rpc('osaka_board_join', {p_name:name}));
+  if(id && typeof id === 'string'){ S.me = id; ls.set('me', id); $('#whoInput').value = ''; $('#whoOv').hidden = true; toast(`반가워요, ${name}!`); render(); }
+});
+
+/* ---------- composer ---------- */
+function setKind(k){
+  S.kind = k;
+  $('#kindPick').innerHTML = Object.entries(KINDS).map(([key, v]) => `<button type="button" data-kind="${key}" aria-pressed="${key === k}">${lb(key)}${v.label}</button>`).join('');
+  document.querySelectorAll('#postForm [data-notalk]').forEach(el => el.hidden = k === 'talk');
+  $('#pTitle').placeholder = k === 'talk' ? '예: 둘째 날 USJ 갈까 말까?' : k === 'food' ? '예: 이치란 라멘 도톤보리점' : k === 'move' ? '예: 공항 → 난바 라피트 타기' : k === 'shop' ? '예: 신사이바시 돈키호테' : '예: 오사카성 천수각';
+}
+$('#kindPick').addEventListener('click', e => { const b = e.target.closest('[data-kind]'); if(b) setKind(b.dataset.kind); });
+function openPost(p){
+  S.editing = p ? p.id : null;
+  $('#postH').textContent = p ? '수정하기' : '올리기';
+  $('#pSave').textContent = p ? '저장' : '올리기';
+  $('#pDel').hidden = !p; $('#pDel').classList.remove('sure'); $('#pDel').textContent = '삭제';
+  $('#pDay').innerHTML = ['<option value="0">미정</option>'].concat(Array.from({length:S.trip.days}, (_, i) => { const dt = dayDate(i+1); return `<option value="${i+1}">${i+1}일차${dt ? ' ' + fmtMD(dt) : ''}</option>`; })).join('');
+  setKind(p?.kind || (S.tab === 'talk' ? 'talk' : S.filter !== 'all' ? S.filter : 'sight'));
+  $('#pTitle').value = p?.title || ''; $('#pPlace').value = p?.place || ''; $('#pUrl').value = p?.mapUrl || '';
+  $('#pBody').value = p?.body || ''; $('#pDay').value = String(p?.day || 0); $('#pTime').value = p?.time || '';
+  $('#postOv').hidden = false; setTimeout(() => $('#pTitle').focus(), 30);
+}
+$('#pCancel').onclick = () => $('#postOv').hidden = true;
+$('#postForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const title = $('#pTitle').value.trim(); if(!title) return;
+  const talk = S.kind === 'talk';
+  const rawUrl = $('#pUrl').value.trim();
+  if(!talk && rawUrl && !safeUrl(rawUrl)){ toast('구글지도 링크는 https:// 로 시작해야 해요'); return; }
+  const editing = S.editing;
+  const ok = await write(() => rpc('osaka_board_save_post', {
+    p_member:S.me, p_post:editing, p_kind:S.kind, p_title:title, p_body:$('#pBody').value.trim(),
+    p_place: talk ? '' : $('#pPlace').value.trim(), p_map_url: talk ? '' : safeUrl(rawUrl),
+    p_day: talk ? 0 : +$('#pDay').value, p_time: talk ? '' : $('#pTime').value,
+  }), editing ? '저장했어요' : '올렸어요');
+  if(ok){
+    $('#postOv').hidden = true;
+    if(!editing){ S.tab = talk ? 'talk' : (+$('#pDay').value ? 'plan' : 'ideas'); ls.set('tab', S.tab); render(); }
+  }
+});
+$('#pDel').onclick = async () => {
+  const b = $('#pDel');
+  if(!b.classList.contains('sure')){ b.classList.add('sure'); b.textContent = '정말 삭제할까요? 한 번 더 누르기'; return; }
+  if(await write(() => rpc('osaka_board_delete_post', {p_post:S.editing}), '삭제했어요')) $('#postOv').hidden = true;
+};
+
+/* ---------- trip ---------- */
+function openTrip(){
+  $('#tTitle').value = S.trip.title || ''; $('#tStart').value = S.trip.start || '';
+  $('#tDays').innerHTML = Array.from({length:10}, (_, i) => `<option value="${i+1}">${i ? i + '박 ' : '당일치기 '}${i+1}일</option>`).join('');
+  $('#tDays').value = String(S.trip.days || 3); $('#tNote').value = S.trip.note || '';
+  $('#tripOv').hidden = false;
+}
+$('#tCancel').onclick = () => $('#tripOv').hidden = true;
+$('#tripForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const ok = await write(() => rpc('osaka_board_save_trip', {
+    p_title:$('#tTitle').value.trim(), p_start:$('#tStart').value || null, p_days:+$('#tDays').value, p_note:$('#tNote').value.trim(),
+  }), '여행 정보를 바꿨어요');
+  if(ok) $('#tripOv').hidden = true;
+});
+
+document.querySelectorAll('.ov').forEach(o => o.addEventListener('click', e => { if(e.target === o) o.hidden = true; }));
+document.addEventListener('keydown', e => { if(e.key === 'Escape') document.querySelectorAll('.ov').forEach(o => o.hidden = true); });
+
+/* ---------- boot ---------- */
+render();
+refresh();
+setInterval(() => { if(document.visibilityState === 'visible') refresh(); }, POLL_MS);
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') refresh(); });
+window.addEventListener('hashchange', () => { const k = readKey(); if(k && k !== S.key){ S.key = k; S.badKey = false; S.loaded = false; S.lastJson = ''; render(); refresh(); } });
+setInterval(render, 60000);
+})();
+</script>
+</body>
+</html>
