@@ -113,8 +113,9 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,8vw,48px);lin
 .voters{font-size:12.5px;color:var(--muted)}
 .assign{margin-left:auto;display:flex;gap:6px;align-items:center}
 .assign select,.assign input{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:3px 6px;font-size:13px}
-.assign .tsel{font-family:var(--mono)}
-#pTime{font-family:var(--mono)}
+.tpair{display:flex;gap:6px}
+.tpair select{font-family:var(--mono)}
+.field .tpair select{flex:1;min-width:0}
 
 .comments{margin-top:10px;display:grid;gap:6px}
 .cm{display:flex;gap:8px;align-items:flex-start;font-size:14px}
@@ -264,7 +265,7 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,8vw,48px);lin
     </div>
     <div class="row2" data-notalk>
       <div class="field"><label for="pDay">날짜</label><select id="pDay"></select></div>
-      <div class="field"><label for="pTime">시간</label><select id="pTime"></select></div>
+      <div class="field"><label for="pTimeH">시간</label><div class="tpair"><select id="pTimeH" aria-label="시"></select><select id="pTimeM" aria-label="분"></select></div></div>
     </div>
     <div class="btns">
       <button class="btn dng" type="button" id="pDel" hidden>삭제</button>
@@ -471,12 +472,20 @@ function renderMain(){
   else m.innerHTML = talkHtml();
 }
 
-// 10분 단위 시간 선택지. 오전 6시부터 시작해 새벽 시간은 맨 뒤로. 기존 값이 10분 단위가 아니면 그 값도 넣어준다.
-const TIME_SLOTS = (() => { const a = []; for(let i = 0; i < 144; i++){ const m = (i * 10 + 360) % 1440; a.push(String(Math.floor(m / 60)).padStart(2,'0') + ':' + String(m % 60).padStart(2,'0')); } return a; })();
-function timeOpts(cur){
-  const list = cur && !TIME_SLOTS.includes(cur) ? [...TIME_SLOTS, cur].sort((a,b) => ((+a.slice(0,2)+18)%24*60 + +a.slice(3)) - ((+b.slice(0,2)+18)%24*60 + +b.slice(3))) : TIME_SLOTS;
-  return `<option value=""${cur ? '' : ' selected'}>시간 미정</option>` + list.map(t => `<option value="${t}"${t === cur ? ' selected' : ''}>${t}</option>`).join('');
+// 시간은 '시'와 '분'(10분 단위) 드롭다운 두 개로 고른다. 시는 오전 6시부터, 새벽은 맨 뒤.
+// 예전에 넣은 13:05처럼 10분 단위가 아닌 분도 그대로 보이게 목록에 넣어준다.
+const HOURS = Array.from({length:24}, (_, i) => String((i + 6) % 24).padStart(2,'0'));
+function hourOpts(cur){
+  const h = cur ? cur.slice(0,2) : '';
+  return `<option value=""${h ? '' : ' selected'}>시 미정</option>` + HOURS.map(x => `<option value="${x}"${x === h ? ' selected' : ''}>${x}시</option>`).join('');
 }
+function minOpts(cur){
+  const m = cur ? cur.slice(3,5) : '';
+  const mins = ['00','10','20','30','40','50'];
+  if(m && !mins.includes(m)) mins.push(m), mins.sort();
+  return mins.map(x => `<option value="${x}"${x === (m || '00') ? ' selected' : ''}>${x}분</option>`).join('');
+}
+const joinTime = (h, m) => h ? `${h}:${m || '00'}` : '';
 function bandOf(t){
   if(!t) return '미정';
   const h = +t.slice(0,2);
@@ -543,7 +552,7 @@ function cardHtml(p){
       <button class="vote${mine ? ' on' : ''}" type="button" data-vote="${esc(p.id)}" aria-pressed="${mine}">${mine ? '♥' : '♡'} 좋아요 <span class="c">${vs.length}</span></button>
       ${vs.length ? `<span class="voters">${vs.map(v => esc(nameOf(v.member))).join(', ')}</span>` : ''}
       ${p.kind !== 'talk' ? `<span class="assign"><select id="day-${esc(p.id)}" data-day="${esc(p.id)}" aria-label="날짜 배정">${dayOpts}</select>
-        <select class="tsel" id="time-${esc(p.id)}" data-time="${esc(p.id)}" aria-label="시간">${timeOpts(p.time)}</select></span>` : ''}
+        <span class="tpair"><select id="th-${esc(p.id)}" data-th="${esc(p.id)}" aria-label="시">${hourOpts(p.time)}</select><select id="tm-${esc(p.id)}" data-tm="${esc(p.id)}" aria-label="분"${p.time ? '' : ' disabled'}>${minOpts(p.time)}</select></span></span>` : ''}
     </div>
     <div class="comments">
       ${cs.map(c => `<div class="cm">${dotHtml(c.author)}<div class="txt"><span class="who">${esc(nameOf(c.author))}</span>${linkify(c.text)}<span class="when">${ago(c.ts)}</span></div>
@@ -592,9 +601,13 @@ document.addEventListener('change', async e => {
     const p = S.posts.find(x => x.id === t.dataset.day); if(!p) return;
     const day = +t.value;
     await write(() => rpc('osaka_board_schedule', {p_post:p.id, p_day:day, p_time:p.time || ''}), day ? `${day}일차에 넣었어요` : '날짜 미정으로 뺐어요');
-  } else if(t.dataset.time){
-    const p = S.posts.find(x => x.id === t.dataset.time); if(!p) return;
-    await write(() => rpc('osaka_board_schedule', {p_post:p.id, p_day:p.day || 0, p_time:t.value || ''}));
+  } else if(t.dataset.th || t.dataset.tm){
+    const id = t.dataset.th || t.dataset.tm;
+    const p = S.posts.find(x => x.id === id); if(!p) return;
+    const time = joinTime(document.getElementById('th-' + id).value, document.getElementById('tm-' + id).value);
+    await write(() => rpc('osaka_board_schedule', {p_post:p.id, p_day:p.day || 0, p_time:time}));
+  } else if(t.id === 'pTimeH'){
+    $('#pTimeM').disabled = !t.value;
   }
 });
 document.addEventListener('input', e => { if(e.target.dataset.draft) S.drafts[e.target.dataset.draft] = e.target.value; });
@@ -638,7 +651,7 @@ function openPost(p, presetDay){
   $('#pDay').innerHTML = ['<option value="0">미정</option>'].concat(Array.from({length:S.trip.days}, (_, i) => { const dt = dayDate(i+1); return `<option value="${i+1}">${i+1}일차${dt ? ' ' + fmtMD(dt) : ''}</option>`; })).join('');
   setKind(p?.kind || (S.tab === 'talk' ? 'talk' : S.filter !== 'all' ? S.filter : 'sight'));
   $('#pTitle').value = p?.title || ''; $('#pPlace').value = p?.place || ''; $('#pUrl').value = p?.mapUrl || '';
-  $('#pBody').value = p?.body || ''; $('#pDay').value = String(p?.day || presetDay || 0); $('#pTime').innerHTML = timeOpts(p?.time || ''); $('#pTime').value = p?.time || '';
+  $('#pBody').value = p?.body || ''; $('#pDay').value = String(p?.day || presetDay || 0); $('#pTimeH').innerHTML = hourOpts(p?.time || ''); $('#pTimeM').innerHTML = minOpts(p?.time || ''); $('#pTimeM').disabled = !p?.time;
   $('#postOv').hidden = false; setTimeout(() => $('#pTitle').focus(), 30);
 }
 $('#pCancel').onclick = () => $('#postOv').hidden = true;
@@ -652,7 +665,7 @@ $('#postForm').addEventListener('submit', async e => {
   const ok = await write(() => rpc('osaka_board_save_post', {
     p_member:S.me, p_post:editing, p_kind:S.kind, p_title:title, p_body:$('#pBody').value.trim(),
     p_place: talk ? '' : $('#pPlace').value.trim(), p_map_url: talk ? '' : safeUrl(rawUrl),
-    p_day: talk ? 0 : +$('#pDay').value, p_time: talk ? '' : $('#pTime').value,
+    p_day: talk ? 0 : +$('#pDay').value, p_time: talk ? '' : joinTime($('#pTimeH').value, $('#pTimeM').value),
   }), editing ? '저장했어요' : '올렸어요');
   if(ok){
     $('#postOv').hidden = true;
