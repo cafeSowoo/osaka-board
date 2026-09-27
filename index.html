@@ -136,7 +136,10 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,8vw,48px);lin
 .stn .code{font-family:var(--mono);font-weight:600;font-size:13px;color:var(--accent);letter-spacing:.04em}
 .stn .dname{font-family:var(--display);font-size:22px;line-height:1}
 .stn .date{color:var(--muted);font-size:13.5px}
-.route{margin-left:auto;font-size:12.5px;display:inline-flex;align-items:center;gap:5px;color:var(--k-move);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.stn-acts{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.addday{font-size:12.5px;font-weight:600;border:1px solid var(--accent);color:var(--accent);background:var(--surface);border-radius:999px;padding:3px 11px}
+.addday:hover{background:var(--accent-soft)}
+.route{font-size:12.5px;display:inline-flex;align-items:center;gap:5px;color:var(--k-move);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:var(--surface)}
 .route:hover{border-color:var(--k-move)}
 .stops{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
 .stop{display:grid;grid-template-columns:52px 22px 1fr auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;text-align:left;width:100%}
@@ -473,13 +476,13 @@ function planHtml(){
     const route = stops.length >= 2 ? 'https://www.google.com/maps/dir/' + stops.map(encodeURIComponent).join('/') : '';
     days.push(`<section class="day">
       <div class="stn"><span class="code">D${String(d).padStart(2,'0')}</span><span class="dname">${d}일차</span>${dt ? `<span class="date">${fmtMD(dt)}</span>` : ''}
-        ${route ? `<a class="route" href="${esc(route)}" target="_blank" rel="noopener">${PIN}이 날 동선 지도</a>` : ''}</div>
+        <span class="stn-acts">${route ? `<a class="route" href="${esc(route)}" target="_blank" rel="noopener">${PIN}이 날 동선 지도</a>` : ''}<button class="addday" type="button" data-addday="${d}">+ 추가</button></span></div>
       ${items.length ? `<ol class="stops">${items.map(p => {
         const v = votesFor(p.id).length, c = commentsFor(p.id).length;
         return `<li><button class="stop" type="button" data-jump="${esc(p.id)}"><time>${esc(p.time || '--:--')}</time>${lb(p.kind)}
           <span class="t">${esc(p.title)}${p.place ? `<span class="s">${esc(p.place)}</span>` : ''}</span>
           <span class="st">♥${v} · 댓글 ${c}</span></button></li>`;}).join('')}</ol>`
-        : `<div class="emptyday">아직 비어 있어요. '가고 싶은 곳'에서 ${d}일차로 넣어주세요.</div>`}
+        : `<div class="emptyday">아직 비어 있어요. 오른쪽 <b>+ 추가</b>로 ${d}일차 일정을 넣어보세요.</div>`}
     </section>`);
   }
   const unassigned = S.posts.filter(p => p.kind !== 'talk' && !(p.day > 0 && p.day <= S.trip.days)).length;
@@ -549,6 +552,7 @@ document.addEventListener('click', async e => {
     return;
   }
   if(t.id === 'fab'){ if(needMe()) openPost(null); return; }
+  if(t.dataset.addday){ if(needMe()) openPost(null, +t.dataset.addday); return; }
   if(t.dataset.jump){
     const p = S.posts.find(x => x.id === t.dataset.jump); if(!p) return;
     S.tab = p.kind === 'talk' ? 'talk' : 'ideas'; S.filter = 'all'; ls.set('tab', S.tab); ls.set('filter', 'all'); doRender();
@@ -609,7 +613,7 @@ function setKind(k){
   $('#pTitle').placeholder = k === 'talk' ? '예: 둘째 날 USJ 갈까 말까?' : k === 'food' ? '예: 이치란 라멘 도톤보리점' : k === 'move' ? '예: 공항 → 난바 라피트 타기' : k === 'shop' ? '예: 신사이바시 돈키호테' : '예: 오사카성 천수각';
 }
 $('#kindPick').addEventListener('click', e => { const b = e.target.closest('[data-kind]'); if(b) setKind(b.dataset.kind); });
-function openPost(p){
+function openPost(p, presetDay){
   S.editing = p ? p.id : null;
   $('#postH').textContent = p ? '수정하기' : '올리기';
   $('#pSave').textContent = p ? '저장' : '올리기';
@@ -617,7 +621,7 @@ function openPost(p){
   $('#pDay').innerHTML = ['<option value="0">미정</option>'].concat(Array.from({length:S.trip.days}, (_, i) => { const dt = dayDate(i+1); return `<option value="${i+1}">${i+1}일차${dt ? ' ' + fmtMD(dt) : ''}</option>`; })).join('');
   setKind(p?.kind || (S.tab === 'talk' ? 'talk' : S.filter !== 'all' ? S.filter : 'sight'));
   $('#pTitle').value = p?.title || ''; $('#pPlace').value = p?.place || ''; $('#pUrl').value = p?.mapUrl || '';
-  $('#pBody').value = p?.body || ''; $('#pDay').value = String(p?.day || 0); $('#pTime').value = p?.time || '';
+  $('#pBody').value = p?.body || ''; $('#pDay').value = String(p?.day || presetDay || 0); $('#pTime').value = p?.time || '';
   $('#postOv').hidden = false; setTimeout(() => $('#pTitle').focus(), 30);
 }
 $('#pCancel').onclick = () => $('#postOv').hidden = true;
