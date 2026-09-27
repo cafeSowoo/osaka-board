@@ -544,12 +544,13 @@ function dayDirectionsHref(items){
   if(places.length > 2) q.set('waypoints', places.slice(1,-1).map(p => p.query).join('|'));
   return 'https://www.google.com/maps/dir/?' + q;
 }
+const SHOW_TRANSIT_DIRECTIONS = false;
 function legHtml(from, to){
+  if(!SHOW_TRANSIT_DIRECTIONS) return '';
   if(!to?.query || (from && from.query === to.query)) return '';
   const label = (from?.label || '현재 위치 / 출발지 선택') + ' → ' + to.label;
   return `<li class="leg"><span class="leg-path">${esc(label)}</span><span class="leg-links">
     <a href="${esc(directionsHref(from, to, 'transit'))}" target="_blank" rel="noopener" aria-label="${esc(label + ' 대중교통 길찾기')}">${PIN}대중교통</a>
-    ${from?.airport || to.airport ? '' : `<a href="${esc(directionsHref(from, to, 'walking'))}" target="_blank" rel="noopener" aria-label="${esc(label + ' 도보 길찾기')}">도보</a>`}
     </span></li>`;
 }
 function planHtml(){
@@ -568,7 +569,7 @@ function planHtml(){
         const band = bandOf(p.time), showBand = band !== prevBand; prevBand = band;
         const place = routePlace(p);
         const leg = place?.query && (i > 0 || !p.time) ? legHtml(p.time ? previous : null, place) : '';
-        const note = !p.time && place?.query ? '시간 미정 · 지도에서 출발지를 선택해주세요.' : p.mapUrl && !place ? '장소 이름을 입력하면 앞뒤 일정과 동선을 연결해요.' : '';
+        const note = !SHOW_TRANSIT_DIRECTIONS ? '' : !p.time && place?.query ? '시간 미정 · 지도에서 출발지를 선택해주세요.' : p.mapUrl && !place ? '장소 이름을 입력하면 앞뒤 일정과 동선을 연결해요.' : '';
         // Free time / an unknown location breaks the route: the next known
         // destination must not silently inherit an earlier departure point.
         previous = p.time && place?.query ? place : null;
@@ -579,7 +580,7 @@ function planHtml(){
     </section>`);
   }
   const unassigned = S.posts.filter(p => p.kind !== 'talk' && !(p.day > 0 && p.day <= S.trip.days)).length;
-  return `<p class="plan-hint">장소 사이의 버튼으로 구글지도 길찾기를 열어요. 출발 날짜·시간은 지도에서 여행 일정에 맞춰 선택해주세요.</p><div class="line">${days.join('')}</div>
+  return `${SHOW_TRANSIT_DIRECTIONS ? '<p class="plan-hint">장소 사이의 버튼으로 구글지도 길찾기를 열어요. 출발 날짜·시간은 지도에서 여행 일정에 맞춰 선택해주세요.</p>' : ''}<div class="line">${days.join('')}</div>
     ${unassigned ? `<p style="margin-top:20px;font-size:13.5px;color:var(--muted)">날짜 안 정해진 후보 ${unassigned}곳 → <button class="linkbtn" type="button" data-tabgo="ideas">가고 싶은 곳 보기</button></p>` : ''}`;
 }
 
