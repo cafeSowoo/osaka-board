@@ -113,7 +113,8 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,8vw,48px);lin
 .voters{font-size:12.5px;color:var(--muted)}
 .assign{margin-left:auto;display:flex;gap:6px;align-items:center}
 .assign select,.assign input{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:3px 6px;font-size:13px}
-.assign input{font-family:var(--mono);width:92px}
+.assign .tsel{font-family:var(--mono)}
+#pTime{font-family:var(--mono)}
 
 .comments{margin-top:10px;display:grid;gap:6px}
 .cm{display:flex;gap:8px;align-items:flex-start;font-size:14px}
@@ -263,7 +264,7 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,8vw,48px);lin
     </div>
     <div class="row2" data-notalk>
       <div class="field"><label for="pDay">날짜</label><select id="pDay"></select></div>
-      <div class="field"><label for="pTime">시간</label><input id="pTime" type="time"></div>
+      <div class="field"><label for="pTime">시간</label><select id="pTime"></select></div>
     </div>
     <div class="btns">
       <button class="btn dng" type="button" id="pDel" hidden>삭제</button>
@@ -470,6 +471,12 @@ function renderMain(){
   else m.innerHTML = talkHtml();
 }
 
+// 10분 단위 시간 선택지. 오전 6시부터 시작해 새벽 시간은 맨 뒤로. 기존 값이 10분 단위가 아니면 그 값도 넣어준다.
+const TIME_SLOTS = (() => { const a = []; for(let i = 0; i < 144; i++){ const m = (i * 10 + 360) % 1440; a.push(String(Math.floor(m / 60)).padStart(2,'0') + ':' + String(m % 60).padStart(2,'0')); } return a; })();
+function timeOpts(cur){
+  const list = cur && !TIME_SLOTS.includes(cur) ? [...TIME_SLOTS, cur].sort((a,b) => ((+a.slice(0,2)+18)%24*60 + +a.slice(3)) - ((+b.slice(0,2)+18)%24*60 + +b.slice(3))) : TIME_SLOTS;
+  return `<option value=""${cur ? '' : ' selected'}>시간 미정</option>` + list.map(t => `<option value="${t}"${t === cur ? ' selected' : ''}>${t}</option>`).join('');
+}
 function bandOf(t){
   if(!t) return '미정';
   const h = +t.slice(0,2);
@@ -536,7 +543,7 @@ function cardHtml(p){
       <button class="vote${mine ? ' on' : ''}" type="button" data-vote="${esc(p.id)}" aria-pressed="${mine}">${mine ? '♥' : '♡'} 좋아요 <span class="c">${vs.length}</span></button>
       ${vs.length ? `<span class="voters">${vs.map(v => esc(nameOf(v.member))).join(', ')}</span>` : ''}
       ${p.kind !== 'talk' ? `<span class="assign"><select id="day-${esc(p.id)}" data-day="${esc(p.id)}" aria-label="날짜 배정">${dayOpts}</select>
-        <input type="time" id="time-${esc(p.id)}" data-time="${esc(p.id)}" value="${esc(p.time || '')}" aria-label="시간"></span>` : ''}
+        <select class="tsel" id="time-${esc(p.id)}" data-time="${esc(p.id)}" aria-label="시간">${timeOpts(p.time)}</select></span>` : ''}
     </div>
     <div class="comments">
       ${cs.map(c => `<div class="cm">${dotHtml(c.author)}<div class="txt"><span class="who">${esc(nameOf(c.author))}</span>${linkify(c.text)}<span class="when">${ago(c.ts)}</span></div>
@@ -631,7 +638,7 @@ function openPost(p, presetDay){
   $('#pDay').innerHTML = ['<option value="0">미정</option>'].concat(Array.from({length:S.trip.days}, (_, i) => { const dt = dayDate(i+1); return `<option value="${i+1}">${i+1}일차${dt ? ' ' + fmtMD(dt) : ''}</option>`; })).join('');
   setKind(p?.kind || (S.tab === 'talk' ? 'talk' : S.filter !== 'all' ? S.filter : 'sight'));
   $('#pTitle').value = p?.title || ''; $('#pPlace').value = p?.place || ''; $('#pUrl').value = p?.mapUrl || '';
-  $('#pBody').value = p?.body || ''; $('#pDay').value = String(p?.day || presetDay || 0); $('#pTime').value = p?.time || '';
+  $('#pBody').value = p?.body || ''; $('#pDay').value = String(p?.day || presetDay || 0); $('#pTime').innerHTML = timeOpts(p?.time || ''); $('#pTime').value = p?.time || '';
   $('#postOv').hidden = false; setTimeout(() => $('#pTitle').focus(), 30);
 }
 $('#pCancel').onclick = () => $('#postOv').hidden = true;
