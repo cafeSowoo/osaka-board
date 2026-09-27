@@ -154,6 +154,14 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,8vw,48px);lin
 .stop .t{font-weight:600;overflow-wrap:anywhere}
 .stop .s{display:block;font-size:12.5px;color:var(--muted);font-weight:400}
 .stop .st{font-family:var(--mono);font-size:12px;color:var(--faint);white-space:nowrap}
+.stops li.leg::before{display:none}
+.leg{padding:5px 10px 9px;color:var(--muted);font-size:12.5px}
+.leg-path{display:block;margin-bottom:6px;overflow-wrap:anywhere}
+.leg-links{display:flex;flex-wrap:wrap;gap:6px}
+.leg-links a{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--k-move);text-decoration:none;font-weight:600}
+.leg-links a:hover{border-color:var(--k-move)}
+.route-note{font-size:12px;color:var(--muted);margin:8px 0 0;overflow-wrap:anywhere}
+.plan-hint{font-size:12.5px;color:var(--muted);margin:16px 0 0}
 .emptyday{margin-top:8px;font-size:13.5px;color:var(--faint)}
 .empty{padding:28px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px;font-size:14px}
 
@@ -491,28 +499,87 @@ function bandOf(t){
   const h = +t.slice(0,2);
   return h < 11 ? '오전' : h < 14 ? '점심' : h < 17 ? '오후' : h < 20 ? '저녁' : '밤';
 }
+
+// Short links checked against Google Maps on 2026-09-27. Key by URL, not
+// post ID, so editing a post's location also changes its directions.
+const ROUTE_PLACES = {
+  iz9V8eet9kLQt5yK8:{label:'Fuku (소네자키)', query:'34.6983014,135.5023466'},
+  XwSRiWDWVSxjDGSh8:{label:'우메다 스카이빌딩', query:'34.7052872,135.4896527'},
+  ZGngQBfqJstXPp2h8:{label:'야키니쿠 하나미치', query:'34.6696848,135.5019408'},
+  '2Kfc5u6qN3DtEoWV7':{label:'카페 안논 난바', query:'34.6642499,135.5041282'},
+  asAKfkUdTh17g6Py5:{label:'무겐라멘 (난바나카)', query:'34.6597595,135.4984993'},
+};
+function routePlace(p){
+  const raw = safeUrl(p.mapUrl);
+  const label = /숙소.*체크/.test(p.title || '') ? '숙소' : p.place || p.title;
+  if(!raw && p.place === '関西国際空港 第2ターミナル') return {label:'간사이공항 제2터미널', query:'34.438896,135.2329974', airport:true};
+  if(raw){
+    const u = new URL(raw);
+    if(u.hostname === 'maps.app.goo.gl'){
+      const known = ROUTE_PLACES[u.pathname.split('/')[1]];
+      if(known) return known;
+      // A shortened link cannot be resolved in the browser without CORS.
+      // Never use a post title (e.g. "이른 저녁") as a location.
+      return p.place?.trim() ? {label:p.place.trim(), query:p.place.trim() + ', Osaka, Japan'} : null;
+    }
+    if(/(^|\.)google\.[a-z.]+$/.test(u.hostname)){
+      const point = u.pathname.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+      const q = point ? point[1] + ',' + point[2] : u.searchParams.get('query') || u.searchParams.get('q');
+      if(q && !/^https?:/i.test(q)) return {label, query:q};
+    }
+  }
+  return p.place?.trim() ? {label:p.place.trim(), query:p.place.trim() + ', Osaka, Japan'} : null;
+}
+function directionsHref(from, to, mode){
+  const q = new URLSearchParams({api:'1', destination:to.query, travelmode:mode});
+  if(from) q.set('origin', from.query);
+  return 'https://www.google.com/maps/dir/?' + q;
+}
+function dayDirectionsHref(items){
+  const places = items.filter(p => p.time).map(routePlace).filter(p => p?.query);
+  // Mobile Maps URLs support up to three intermediate waypoints. The
+  // individual leg links remain available for longer itineraries.
+  if(places.length < 2 || places.length > 5) return '';
+  const q = new URLSearchParams({api:'1', origin:places[0].query, destination:places.at(-1).query});
+  if(places.length > 2) q.set('waypoints', places.slice(1,-1).map(p => p.query).join('|'));
+  return 'https://www.google.com/maps/dir/?' + q;
+}
+function legHtml(from, to){
+  if(!to?.query || (from && from.query === to.query)) return '';
+  const label = (from?.label || '현재 위치 / 출발지 선택') + ' → ' + to.label;
+  return `<li class="leg"><span class="leg-path">${esc(label)}</span><span class="leg-links">
+    <a href="${esc(directionsHref(from, to, 'transit'))}" target="_blank" rel="noopener" aria-label="${esc(label + ' 대중교통 길찾기')}">${PIN}대중교통</a>
+    ${from?.airport || to.airport ? '' : `<a href="${esc(directionsHref(from, to, 'walking'))}" target="_blank" rel="noopener" aria-label="${esc(label + ' 도보 길찾기')}">도보</a>`}
+    </span></li>`;
+}
 function planHtml(){
   const days = []; let prevBand = null;
   for(let d = 1; d <= S.trip.days; d++){
     const items = S.posts.filter(p => p.kind !== 'talk' && p.day === d)
       .sort((a,b) => (a.time || '99') < (b.time || '99') ? -1 : (a.time || '99') > (b.time || '99') ? 1 : a.ts - b.ts);
     const dt = dayDate(d);
-    const stops = items.filter(p => p.place || safeUrl(p.mapUrl)).map(p => p.place || p.title);
-    const route = stops.length >= 2 ? 'https://www.google.com/maps/dir/' + stops.map(encodeURIComponent).join('/') : '';
+    const route = dayDirectionsHref(items);
+    let previous = null;
     days.push(`<section class="day">
       <div class="stn"><span class="code">D${String(d).padStart(2,'0')}</span><span class="dname">${d}일차</span>${dt ? `<span class="date">${fmtMD(dt)}</span>` : ''}
         <span class="stn-acts">${route ? `<a class="route" href="${esc(route)}" target="_blank" rel="noopener">${PIN}이 날 동선 지도</a>` : ''}<button class="addday" type="button" data-addday="${d}">+ 추가</button></span></div>
-      ${items.length ? `<ol class="stops">${(prevBand = null, items).map(p => {
+      ${items.length ? `<ol class="stops">${(prevBand = null, items).map((p, i) => {
         const v = votesFor(p.id).length, c = commentsFor(p.id).length;
         const band = bandOf(p.time), showBand = band !== prevBand; prevBand = band;
-        return `<li${showBand ? ` data-band="${band}"` : ''}><button class="stop" type="button" data-jump="${esc(p.id)}"><time>${esc(p.time || '--:--')}</time>${lb(p.kind)}
+        const place = routePlace(p);
+        const leg = place?.query && (i > 0 || !p.time) ? legHtml(p.time ? previous : null, place) : '';
+        const note = !p.time && place?.query ? '시간 미정 · 지도에서 출발지를 선택해주세요.' : p.mapUrl && !place ? '장소 이름을 입력하면 앞뒤 일정과 동선을 연결해요.' : '';
+        // Free time / an unknown location breaks the route: the next known
+        // destination must not silently inherit an earlier departure point.
+        previous = p.time && place?.query ? place : null;
+        return `${leg}<li${showBand ? ` data-band="${band}"` : ''}><button class="stop" type="button" data-jump="${esc(p.id)}"><time>${esc(p.time || '--:--')}</time>${lb(p.kind)}
           <span class="t">${esc(p.title)}${p.place ? `<span class="s">${esc(p.place)}</span>` : ''}</span>
-          <span class="st">♥${v} · 댓글 ${c}</span></button></li>`;}).join('')}</ol>`
+          <span class="st">♥${v} · 댓글 ${c}</span></button>${note ? `<p class="route-note">${esc(note)}</p>` : ''}</li>`;}).join('')}</ol>`
         : `<div class="emptyday">아직 비어 있어요. 오른쪽 <b>+ 추가</b>로 ${d}일차 일정을 넣어보세요.</div>`}
     </section>`);
   }
   const unassigned = S.posts.filter(p => p.kind !== 'talk' && !(p.day > 0 && p.day <= S.trip.days)).length;
-  return `<div class="line">${days.join('')}</div>
+  return `<p class="plan-hint">장소 사이의 버튼으로 구글지도 길찾기를 열어요. 출발 날짜·시간은 지도에서 여행 일정에 맞춰 선택해주세요.</p><div class="line">${days.join('')}</div>
     ${unassigned ? `<p style="margin-top:20px;font-size:13.5px;color:var(--muted)">날짜 안 정해진 후보 ${unassigned}곳 → <button class="linkbtn" type="button" data-tabgo="ideas">가고 싶은 곳 보기</button></p>` : ''}`;
 }
 
