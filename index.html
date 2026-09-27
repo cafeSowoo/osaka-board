@@ -127,12 +127,12 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,8vw,48px);lin
 .cform button{border:0;background:var(--ink);color:var(--bg);border-radius:8px;padding:0 12px;font-size:13px;font-weight:600}
 
 /* plan / metro line */
-.line{position:relative;margin-top:18px;padding-left:28px}
-.line::before{content:"";position:absolute;left:9px;top:10px;bottom:10px;width:5px;border-radius:3px;background:var(--accent)}
+.line{position:relative;margin-top:18px;padding-left:52px}
+.line::before{content:"";position:absolute;left:21px;top:10px;bottom:10px;width:5px;border-radius:3px;background:var(--accent)}
 .day{position:relative;padding-bottom:22px}
 .day:last-child{padding-bottom:0}
 .stn{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.stn::before{content:"";position:absolute;left:-28px;top:2px;width:23px;height:23px;border-radius:50%;background:var(--surface);border:5px solid var(--accent);box-sizing:border-box}
+.stn::before{content:"";position:absolute;left:-40px;top:2px;width:23px;height:23px;border-radius:50%;background:var(--surface);border:5px solid var(--accent);box-sizing:border-box}
 .stn .code{font-family:var(--mono);font-weight:600;font-size:13px;color:var(--accent);letter-spacing:.04em}
 .stn .dname{font-family:var(--display);font-size:22px;line-height:1}
 .stn .date{color:var(--muted);font-size:13.5px}
@@ -142,6 +142,9 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,8vw,48px);lin
 .route{font-size:12.5px;display:inline-flex;align-items:center;gap:5px;color:var(--k-move);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:var(--surface)}
 .route:hover{border-color:var(--k-move)}
 .stops{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.stops li{position:relative}
+.stops li::before{content:"";position:absolute;left:-33px;top:50%;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;background:var(--surface);border:2px solid var(--accent);box-sizing:border-box}
+.stops li[data-band]::before{content:attr(data-band);left:-48px;width:40px;height:auto;margin-top:0;transform:translateY(-50%);border-radius:999px;border-width:1.5px;padding:2px 0;font-size:10.5px;font-weight:700;line-height:1.2;text-align:center;color:var(--accent);letter-spacing:.02em}
 .stop{display:grid;grid-template-columns:52px 22px 1fr auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;text-align:left;width:100%}
 .stop:hover{border-color:var(--faint)}
 .stop time{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -466,8 +469,13 @@ function renderMain(){
   else m.innerHTML = talkHtml();
 }
 
+function bandOf(t){
+  if(!t) return '미정';
+  const h = +t.slice(0,2);
+  return h < 11 ? '오전' : h < 14 ? '점심' : h < 17 ? '오후' : h < 20 ? '저녁' : '밤';
+}
 function planHtml(){
-  const days = [];
+  const days = []; let prevBand = null;
   for(let d = 1; d <= S.trip.days; d++){
     const items = S.posts.filter(p => p.kind !== 'talk' && p.day === d)
       .sort((a,b) => (a.time || '99') < (b.time || '99') ? -1 : (a.time || '99') > (b.time || '99') ? 1 : a.ts - b.ts);
@@ -477,9 +485,10 @@ function planHtml(){
     days.push(`<section class="day">
       <div class="stn"><span class="code">D${String(d).padStart(2,'0')}</span><span class="dname">${d}일차</span>${dt ? `<span class="date">${fmtMD(dt)}</span>` : ''}
         <span class="stn-acts">${route ? `<a class="route" href="${esc(route)}" target="_blank" rel="noopener">${PIN}이 날 동선 지도</a>` : ''}<button class="addday" type="button" data-addday="${d}">+ 추가</button></span></div>
-      ${items.length ? `<ol class="stops">${items.map(p => {
+      ${items.length ? `<ol class="stops">${(prevBand = null, items).map(p => {
         const v = votesFor(p.id).length, c = commentsFor(p.id).length;
-        return `<li><button class="stop" type="button" data-jump="${esc(p.id)}"><time>${esc(p.time || '--:--')}</time>${lb(p.kind)}
+        const band = bandOf(p.time), showBand = band !== prevBand; prevBand = band;
+        return `<li${showBand ? ` data-band="${band}"` : ''}><button class="stop" type="button" data-jump="${esc(p.id)}"><time>${esc(p.time || '--:--')}</time>${lb(p.kind)}
           <span class="t">${esc(p.title)}${p.place ? `<span class="s">${esc(p.place)}</span>` : ''}</span>
           <span class="st">♥${v} · 댓글 ${c}</span></button></li>`;}).join('')}</ol>`
         : `<div class="emptyday">아직 비어 있어요. 오른쪽 <b>+ 추가</b>로 ${d}일차 일정을 넣어보세요.</div>`}
